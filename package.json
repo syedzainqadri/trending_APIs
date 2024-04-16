@@ -1,0 +1,24 @@
+{
+  "name": "trending",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@binance-chain/javascript-sdk": "^4.2.2",
+    "@pancakeswap/v3-sdk": "^3.8.1",
+    "@solana/web3.js": "^1.91.4",
+    "@uniswap/v3-sdk": "^3.11.0",
+    "axios": "^1.6.8",
+    "ethers": "5.7",
+    "express": "^4.19.2",
+    "jsbi": "^4.3.0",
+    "node-fetch": "^3.3.2",
+    "web3": "^4.7.0"
+  }
+}

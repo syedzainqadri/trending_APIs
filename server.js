@@ -4,9 +4,11 @@ const { Connection, clusterApiUrl, PublicKey } = require('@solana/web3.js');
 const axios = require('axios');
 const JSBI = require('jsbi');
 const { TickMath, FullMath } = require('@uniswap/v3-sdk');
-
+const cors = require('cors');
 const app = express();
 const port = 3000;
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -138,6 +140,44 @@ app.post("/price/ETH", async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   });
+
+// API endpoint to get a rank by tier and rank number
+const tiers = {
+    '1': Array.from({ length: 3 }, (_, i) => `Tier 1 Rank ${i + 1}`), // Tier 1: Ranks 1 to 3
+    '2': Array.from({ length: 9 }, (_, i) => `Tier 2 Rank ${i + 1}`), // Tier 2: Ranks 1 to 9
+    '3': Array.from({ length: 16 }, (_, i) => `Tier 3 Rank ${i + 1}`), // Tier 3: Ranks 1 to 16
+    '4': Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`) // Tier 4: Any ranks (example up to 30)
+};
+app.get('/rank/:tier/:rank', (req, res) => {
+    const { tier, rank } = req.params;
+    if (!tiers[tier] || !tiers[tier][rank - 1]) {
+        return res.status(404).send('Rank not found');
+    }
+    const selectedRank = tiers[tier][rank - 1];
+    console.log(selectedRank); // Output the selected rank to the console
+    res.send({ rank: selectedRank });
+});
+
+// API endpoint to get the dex 
+// http://localhost:3000/get-url?platform=ave
+const urlMap = {
+    'ave': 'https://ave.ai/',
+    'dexscreener': 'https://dexscreener.com/',
+    'dextools': 'https://www.dextools.io/app/en/pairs',
+    'birdeye': 'https://birdeye.so/'
+  };
+  
+  // Route to handle URL lookup
+  app.get('/get-url', (req, res) => {
+    const platform = req.query.platform;
+    if (urlMap[platform]) {
+      console.log(`URL for ${platform}: ${urlMap[platform]}`);
+      res.send(urlMap[platform]);
+    } else {
+      res.status(404).send('Platform not found');
+    }
+  });
+  
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

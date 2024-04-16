@@ -143,40 +143,68 @@ app.post("/price/ETH", async (req, res) => {
 
 // API endpoint to get a rank by tier and rank number
 const tiers = {
-    '1': Array.from({ length: 3 }, (_, i) => `Tier 1 Rank ${i + 1}`), // Tier 1: Ranks 1 to 3
-    '2': Array.from({ length: 9 }, (_, i) => `Tier 2 Rank ${i + 1}`), // Tier 2: Ranks 1 to 9
-    '3': Array.from({ length: 16 }, (_, i) => `Tier 3 Rank ${i + 1}`), // Tier 3: Ranks 1 to 16
-    '4': Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`) // Tier 4: Any ranks (example up to 30)
+    '1': Array.from({ length: 3 }, (_, i) => `Tier 1 Rank ${i + 1}`),
+    '2': Array.from({ length: 6 }, (_, i) => `Tier 2 Rank ${i + 4}`),
+    '3': Array.from({ length: 7 }, (_, i) => `Tier 3 Rank ${i + 10}`),
+    '4': Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`)
 };
+
 app.get('/rank/:tier/:rank', (req, res) => {
     const { tier, rank } = req.params;
     if (!tiers[tier] || !tiers[tier][rank - 1]) {
         return res.status(404).send('Rank not found');
     }
     const selectedRank = tiers[tier][rank - 1];
-    console.log(selectedRank); // Output the selected rank to the console
+    console.log(selectedRank);
     res.send({ rank: selectedRank });
 });
 
-// API endpoint to get the dex 
-// http://localhost:3000/get-url?platform=ave
 const urlMap = {
     'ave': 'https://ave.ai/',
     'dexscreener': 'https://dexscreener.com/',
     'dextools': 'https://www.dextools.io/app/en/pairs',
     'birdeye': 'https://birdeye.so/'
-  };
-  
-  // Route to handle URL lookup
-  app.get('/dex', (req, res) => {
+};
+
+// API endpoint to get dex
+app.get('/dex', (req, res) => {
     const platform = req.query.platform;
     if (urlMap[platform]) {
-      console.log(`URL for ${platform}: ${urlMap[platform]}`);
-      res.send(urlMap[platform]);
+        console.log(`URL for ${platform}: ${urlMap[platform]}`);
+        res.send(urlMap[platform]);
     } else {
-      res.status(404).send('Platform not found');
+        res.status(404).send('Platform not found');
     }
-  });
+});
+
+// API endpoint to check slot and dex
+const bookedSlots = {};
+app.post('/check', (req, res) => {
+    const { dex, slot } = req.body;
+    const availableDexs = Object.keys(urlMap);
+    if (!bookedSlots[slot]) {
+        bookedSlots[slot] = {};
+    }
+
+    if (bookedSlots[slot][dex]) {
+        res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
+    } else {
+        let slotFullyBooked = true;
+        for (let availableDex of availableDexs) {
+            if (!bookedSlots[slot][availableDex]) {
+                slotFullyBooked = false;
+                break;
+            }
+        }
+
+        if (slotFullyBooked) {
+            res.status(409).json({ message: `All DEXs are booked for slot ${slot}. Please choose a different slot.` });
+        } else {
+            bookedSlots[slot][dex] = true;
+            res.json({ message: `Slot ${slot} successfully booked for ${dex}.` });
+        }
+    }
+});
   
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

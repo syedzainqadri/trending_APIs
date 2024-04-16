@@ -168,7 +168,7 @@ const urlMap = {
   };
   
   // Route to handle URL lookup
-  app.get('/get-url', (req, res) => {
+  app.get('/dex', (req, res) => {
     const platform = req.query.platform;
     if (urlMap[platform]) {
       console.log(`URL for ${platform}: ${urlMap[platform]}`);

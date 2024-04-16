@@ -141,20 +141,22 @@ app.post("/price/ETH", async (req, res) => {
     }
   });
 
-// API endpoint to get a rank by tier and rank number
-const tiers = {
-    '1': Array.from({ length: 3 }, (_, i) => `Tier 1 Rank ${i + 1}`),
-    '2': Array.from({ length: 6 }, (_, i) => `Tier 2 Rank ${i + 4}`),
-    '3': Array.from({ length: 7 }, (_, i) => `Tier 3 Rank ${i + 10}`),
-    '4': Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`)
-};
+  const ranks = [
+    ...Array.from({ length: 3 }, (_, i) => `Tier 1 Rank ${i + 1}`),
+    ...Array.from({ length: 6 }, (_, i) => `Tier 2 Rank ${i + 4}`),
+    ...Array.from({ length: 7 }, (_, i) => `Tier 3 Rank ${i + 10}`),
+    ...Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`)
+];
 
-app.get('/rank/:tier/:rank', (req, res) => {
-    const { tier, rank } = req.params;
-    if (!tiers[tier] || !tiers[tier][rank - 1]) {
+app.get('/rank/:rank', (req, res) => {
+    const { rank } = req.params;
+    const rankIndex = parseInt(rank) - 1; // Convert rank to an array index
+
+    if (rankIndex < 0 || rankIndex >= ranks.length || isNaN(rankIndex)) {
         return res.status(404).send('Rank not found');
     }
-    const selectedRank = tiers[tier][rank - 1];
+    
+    const selectedRank = ranks[rankIndex];
     console.log(selectedRank);
     res.send({ rank: selectedRank });
 });

@@ -1,12 +1,12 @@
 const express = require('express');
 const axios = require('axios');
-const { Connection, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL, Transaction, SystemProgram, Keypair, TokenInstructions } = require('@solana/web3.js');
+const { Connection, PublicKey, clusterApiUrl, Transaction, SystemProgram, Keypair, TokenInstructions } = require('@solana/web3.js');
 const { Token } = require('@solana/spl-token');
-
+const cors = require('cors');
 const app = express();
 const port = 3000;
-
-app.use(express.json());  // Enable JSON body parsing
+app.use(express.json());
+app.use(cors());
 
 let solPrice = null;
 let monkeysPrice = null;

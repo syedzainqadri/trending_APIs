@@ -1,10 +1,11 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');  
 const app = express();
 const port = 3000;
-// Middleware to parse JSON bodies
+app.use(cors()); 
 app.use(express.json());
-// Endpoint to convert USDT to BNB
+
 app.post('/USDTtoBNB/:usdtAmount', async (req, res) => {
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {

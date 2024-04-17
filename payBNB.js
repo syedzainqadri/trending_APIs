@@ -1,11 +1,15 @@
 const express = require('express');
 const axios = require('axios');
 const { ethers } = require('ethers');
+const cors = require('cors'); // Import cors module
 const app = express();
 const port = 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Convert USDT to BNB
 async function convertUSDTtoBNB(usdtAmount) {

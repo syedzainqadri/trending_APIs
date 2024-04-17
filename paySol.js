@@ -1,8 +1,10 @@
 const express = require('express');
 const axios = require('axios');
 const { Connection, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL, Transaction, SystemProgram, Keypair } = require('@solana/web3.js');
+const cors = require('cors'); 
 const app = express();
 const port = 3000;
+app.use(cors());
 
 const secretKey = process.env.SOLANA_SECRET_KEY.split(',').map(num => parseInt(num, 10));
 const connection = new Connection(clusterApiUrl('mainnet-beta'));

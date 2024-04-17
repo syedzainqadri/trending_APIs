@@ -1,8 +1,9 @@
-const express = require('express');
 const app = express();
 const JSBI = require('jsbi');
 const { TickMath, FullMath } = require('@uniswap/v3-sdk');
 const { ethers } = require('ethers');
+const cors = require('cors'); 
+app.use(cors());
 app.use(express.json());
 
 

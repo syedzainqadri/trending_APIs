@@ -1,8 +1,9 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const JSBI = require('jsbi');
 const { TickMath, FullMath } = require('@uniswap/v3-sdk');
-
+app.use(cors());
 app.use(express.json());
 
 // Function to calculate ETH price based on tick

@@ -1,10 +1,13 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors'); 
 const app = express();
 const port = 3000;
 
+app.use(cors());
+
 let solPrice = null;
-let monkeysPrice = null; // Global variable to store the MONKEYS price
+let monkeysPrice = null;
 
 async function fetchSolPrice() {
     const apiUrl = 'https://price.jup.ag/v4/price?ids=SOL';

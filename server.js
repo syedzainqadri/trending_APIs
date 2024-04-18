@@ -20,7 +20,7 @@ app.post('/verify-token', async (req, res) => {
 
     try {
         switch (chain) {
-            case 'eth':
+            case 'ethereum':
             case 'bsc':
                 const provider = chain === 'eth' ? ethProvider : bscProvider;
                 const tokenContract = new ethers.Contract(tokenAddress, ['function balanceOf(address) view returns (uint)'], provider);
@@ -31,7 +31,7 @@ app.post('/verify-token', async (req, res) => {
                     res.json({ valid: false, reason: "No contract at this address or contract does not comply with expected interface." });
                 }
                 break;
-            case 'sol':
+            case 'solana':
                 if (PublicKey.isOnCurve(tokenAddress)) {
                     try {
                         const accountInfo = await solanaConnection.getAccountInfo(new PublicKey(tokenAddress));
@@ -58,12 +58,12 @@ app.post('/select-chain', async (req, res) => {
 
     try {
         switch (chain) {
-            case 'eth':
+            case 'ethereum':
                 const ethChainId = await ethProvider.getNetwork().then(network => network.chainId);
                 console.log("Ethereum network : ", ethChainId);
                 res.json({ chainId: ethChainId });
                 break;
-            case 'sol':
+            case 'solana':
                 const solChainId = solanaConnection._rpcEndpoint;
                 console.log("Solana network : ", solChainId);
                 res.json({ chainId: solChainId });
@@ -148,6 +148,66 @@ app.post('/check', (req, res) => {
         }
     }
 });
+
+app.get('/pairs/:chainId/:pairAddresses', async (req, res) => {
+    const { chainId, pairAddresses } = req.params;
+    const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddresses}`;
+
+    try {
+        const response = await axios.get(url);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error fetching data:', error.message);
+        res.status(500).json({ error: 'Failed to fetch data' });
+    }
+});
+
+// Endpoint to get 1-hour transaction data for a specific pair
+app.get('/txns/1h/:chainId/:pairAddress', async (req, res) => {
+    const { chainId, pairAddress } = req.params;
+    const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
+
+    try {
+        const response = await axios.get(url);
+        const txns = response.data.pair.txns.h1; // Extracting 1-hour transaction data
+        res.json(txns);
+    } catch (error) {
+        console.error('Error fetching 1-hour transaction data:', error.message);
+        res.status(500).json({ error: 'Failed to fetch 1-hour transaction data' });
+    }
+});
+
+
+// Endpoint to get 5-minute volume data for a specific pair
+app.get('/volume/m5/:chainId/:pairAddress', async (req, res) => {
+    const { chainId, pairAddress } = req.params;
+    const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
+
+    try {
+        const response = await axios.get(url);
+        const volume = response.data.pair.volume.m5; // Extracting 5-minute volume data
+        res.json(volume);
+    } catch (error) {
+        console.error('Error fetching 5-minute volume data:', error.message);
+        res.status(500).json({ error: 'Failed to fetch 5-minute volume data' });
+    }
+});
+
+// Endpoint to get 1-hour volume data for a specific pair
+app.get('/volume/h1/:chainId/:pairAddress', async (req, res) => {
+    const { chainId, pairAddress } = req.params;
+    const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
+
+    try {
+        const response = await axios.get(url);
+        const volume = response.data.pair.volume.h1; // Extracting 1-hour volume data
+        res.json(volume);
+    } catch (error) {
+        console.error('Error fetching 1-hour volume data:', error.message);
+        res.status(500).json({ error: 'Failed to fetch 1-hour volume data' });
+    }
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

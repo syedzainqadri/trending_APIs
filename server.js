@@ -21,7 +21,7 @@ app.post('/verify-token', async (req, res) => {
 
     try {
         switch (chain) {
-            case 'ethereum':
+            case 'eth':
             case 'bsc':
                 const provider = chain === 'eth' ? ethProvider : bscProvider;
                 const tokenContract = new ethers.Contract(tokenAddress, ['function balanceOf(address) view returns (uint)'], provider);
@@ -32,7 +32,7 @@ app.post('/verify-token', async (req, res) => {
                     res.json({ valid: false, reason: "No contract at this address or contract does not comply with expected interface." });
                 }
                 break;
-            case 'solana':
+            case 'sol':
                 if (PublicKey.isOnCurve(tokenAddress)) {
                     try {
                         const accountInfo = await solanaConnection.getAccountInfo(new PublicKey(tokenAddress));
@@ -59,12 +59,12 @@ app.post('/select-chain', async (req, res) => {
 
     try {
         switch (chain) {
-            case 'ethereum':
+            case 'eth':
                 const ethChainId = await ethProvider.getNetwork().then(network => network.chainId);
                 console.log("Ethereum network : ", ethChainId);
                 res.json({ chainId: ethChainId });
                 break;
-            case 'solana':
+            case 'sol':
                 const solChainId = solanaConnection._rpcEndpoint;
                 console.log("Solana network : ", solChainId);
                 res.json({ chainId: solChainId });

@@ -16,9 +16,31 @@ const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
 // Verify token address API
-app.get('/hello', async (req, res) => {
+
+// Existing code for blockchain network selection
+app.post('/select-chain', async (req, res) => {
+    const { chain } = req.body;
+
     try {
-        print("Hello")
+        switch (chain) {
+            case 'eth':
+                const ethChainId = await ethProvider.getNetwork().then(network => network.chainId);
+                console.log("Ethereum network : ", ethChainId);
+                res.json({ chainId: ethChainId });
+                break;
+            case 'sol':
+                const solChainId = solanaConnection._rpcEndpoint;
+                console.log("Solana network : ", solChainId);
+                res.json({ chainId: solChainId });
+                break;
+            case 'bsc':
+                const bscChainId = await bscProvider.getNetwork().then(network => network.chainId);
+                console.log("Binance Smart Chain network : ", bscChainId);
+                res.json({ chainId: bscChainId });
+                break;
+            default:
+                res.status(400).json({ error: 'Invalid blockchain selected' });
+        }
     } catch (error) {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }

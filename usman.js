@@ -20,6 +20,7 @@ app.get('/createSOL', (req, res) => {
     const publicKey = keyPair.publicKey.toString();
     const secretKeyBuffer = Buffer.from(keyPair.secretKey);
     const secretKeyBase58 = bs58.encode(secretKeyBuffer);
+    //save everything to db
     res.json({ publicKey, secretKeyBase58 });
 });
 
@@ -40,6 +41,8 @@ const getBalance = async (address, paymentType) => {
     }
 };
 
+
+
 app.get('/SOLbalance/:address', async (req, res) => {
     try {
         const balance = await getBalance(req.params.address, 'SOL');
@@ -48,7 +51,7 @@ app.get('/SOLbalance/:address', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
+// if balance is found
 // WebSocket for handling transaction submissions
 wss.on('connection', ws => {
     ws.on('message', async data => {
@@ -67,11 +70,19 @@ wss.on('connection', ws => {
                 ws.send(JSON.stringify({ status: transactionStatus }));
             }, 240000); // 4 minutes timeout
 
+            //if balance true
+            // tele with order amount
+
+
             if (balance >= price) {
                 transactionStatus = 'completed';
+                //staus must be updated in db as well. then fetch the transaction details from db and send transaction
                 ws.send(JSON.stringify({ status: transactionStatus }));
+                //send this order to our flask app to run.
             } else {
+                //balance is not true and transaction is not completed then trigger refund send private / public key plus amount to be refunded. 
                 transactionStatus = 'refund';
+                //update status in db.
                 ws.send(JSON.stringify({
                     chatID,
                     address,

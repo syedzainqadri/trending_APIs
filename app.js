@@ -4,7 +4,6 @@ const { PrismaClient } = require('@prisma/client');
 const { Connection, Keypair, PublicKey, clusterApiUrl } = require('@solana/web3.js');
 const bs58 = require('bs58');
 const axios = require('axios');
-const WebSocket = require('ws');
 const http = require('http');
 const prisma = new PrismaClient();
 const app = express();
@@ -20,7 +19,7 @@ app.post('/createSOL', async (req, res) => {
     const secretKeyBuffer = Buffer.from(keyPair.secretKey);
     const secretKeyBase58 = bs58.encode(secretKeyBuffer);
     try {
-        const savedKey = await prisma.solanaKey.create({
+        const savedKey = await prisma.order.create({
             data: {
                 publicKey: publicKey,
                 secretKeyBase58: secretKeyBase58

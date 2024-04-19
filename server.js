@@ -90,7 +90,7 @@ const ranks = [
     ...Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`)
 ];
 
-app.get('/rank/:rank', (req, res) => {
+app.post('/rank/:rank', (req, res) => {
     const { rank } = req.params;
     const rankIndex = parseInt(rank) - 1; // Convert rank to an array index
 
@@ -104,10 +104,8 @@ app.get('/rank/:rank', (req, res) => {
 });
 
 const urlMap = {
-    'ave': 'https://ave.ai/',
-    'dexscreener': 'https://dexscreener.com/',
-    'dextools': 'https://www.dextools.io/app/en/pairs',
-    'birdeye': 'https://birdeye.so/'
+    'dexscreener': 'dexscreener.com/',
+    'dextools': 'www.dextools.io/app/en/pairs',
 };
 
 // API endpoint to get dex
@@ -206,6 +204,38 @@ app.get('/volume/h1/:chainId/:pairAddress', async (req, res) => {
     } catch (error) {
         console.error('Error fetching 1-hour volume data:', error.message);
         res.status(500).json({ error: 'Failed to fetch 1-hour volume data' });
+    }
+});
+
+const dexUrls = {
+    "dextools": {
+        "ethereum": "www.dextools.io/app/en/ether/pairs",
+        "binance smart chain": "www.dextools.io/app/en/bnb/pairs",
+        "solana": "https://www.dextools.io/app/en/solana/pairs"
+    },
+    "dexscreener": {
+        "ethereum": "dexscreener.com/ethereum",
+        "binance smart chain": "dexscreener.com/bsc",
+        "solana": "dexscreener.com/solana"
+    }
+};
+
+app.post('/api/url', (req, res) => {
+    const { dex, chain } = req.body; // Read from the body, not the params
+
+    if (!dex || !chain) {
+        return res.status(400).send('Both dex and chain fields are required in the request body.');
+    }
+
+    const dexKey = dex.toLowerCase().replace(/\s+/g, ''); // Normalize input
+    const chainKey = chain.toLowerCase();
+
+    const url = dexUrls[dexKey]?.[chainKey];
+
+    if (url) {
+        res.json({ url }); // Use json to ensure proper content type
+    } else {
+        res.status(404).send('No URL found for the provided dex and chain combination.');
     }
 });
 

@@ -25,6 +25,7 @@ app.post('/createSOL', async (req, res) => {
                 secretKeyBase58: secretKeyBase58
             }
         });
+        // response should contian the id of the transaction 
         res.json({ publicKey: savedKey.publicKey, secretKeyBase58: savedKey.secretKeyBase58 });
     } catch (error) {
         console.error('Error saving keys to the database:', error);

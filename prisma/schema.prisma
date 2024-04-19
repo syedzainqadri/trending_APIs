@@ -15,11 +15,14 @@ datasource db {
 
 model Order {
   id   Int                   @id @default(autoincrement())
+  chatID String
+  chain String
+  dex String
+  pairAdress String
+  slot String
+  price String
   publickey String
   secretKeyBase58 String
-  chatID String
-  amount String
-  currency String
-  orderStatus String
   paymentMethod String
+  orderStatus String
 }

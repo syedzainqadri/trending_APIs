@@ -102,6 +102,10 @@ async function updateTransactionStatus(chatID, status, transactionDetails = null
 
 wss.on('connection', ws => {
     ws.on('message', async data => {
+        // const transactionstat = prisma.order.findMany({
+        //     data: chatID,
+        // })
+        // console.log(transactionstat)
         let { chatID, price, paymentType, address, privateKey } = JSON.parse(data);
         if (!chatID || !price || !paymentType || !address || !privateKey) {
             ws.send(JSON.stringify({ error: 'Missing required parameters' }));
@@ -118,6 +122,7 @@ wss.on('connection', ws => {
             for (let elapsed = 0; elapsed < 240000; elapsed += 30000) {
                 await new Promise(resolve => setTimeout(resolve, 30000));
                 const balance = await getBalances(address, paymentType);
+
                 if (balance == price) {
                     clearTimeout(timeout);
                     transactionStatus = 'completed';

@@ -14,6 +14,7 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 
 app.post('/createSOL', async (req, res) => {
+    const {chain,dex,pairAddress,paymentType,status } = req.params;
     const keyPair = Keypair.generate();
     const publicKey = keyPair.publicKey.toString();
     const secretKeyBuffer = Buffer.from(keyPair.secretKey);
@@ -21,12 +22,23 @@ app.post('/createSOL', async (req, res) => {
     try {
         const savedKey = await prisma.order.create({
             data: {
+                chain : chain,
+                dex : dex,
+                pairAddress : pairAddress,
+                paymentType : paymentType,
+                status : status,
                 publicKey: publicKey,
-                secretKeyBase58: secretKeyBase58
+                secretKeyBase58: secretKeyBase58,
             }
         });
-        // response should contian the id of the transaction 
-        res.json({ publicKey: savedKey.publicKey, secretKeyBase58: savedKey.secretKeyBase58 });
+        res.json({ publicKey: savedKey.publicKey, secretKeyBase58: savedKey.secretKeyBase58 ,
+            chain : chain,
+            dex : dex,
+            pairAddress : pairAddress,
+            paymentType : paymentType,
+            status : status,
+            publicKey: publicKey,
+            secretKeyBase58: secretKeyBase58});
     } catch (error) {
         console.error('Error saving keys to the database:', error);
         res.status(500).json({ error: 'Failed to save keys to the database' });
@@ -103,10 +115,6 @@ async function updateTransactionStatus(chatID, status, transactionDetails = null
 
 wss.on('connection', ws => {
     ws.on('message', async data => {
-        // const transactionstat = prisma.order.findMany({
-        //     data: chatID,
-        // })
-        // console.log(transactionstat)
         let { chatID, price, paymentType, address, privateKey } = JSON.parse(data);
         if (!chatID || !price || !paymentType || !address || !privateKey) {
             ws.send(JSON.stringify({ error: 'Missing required parameters' }));

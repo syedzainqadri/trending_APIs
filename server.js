@@ -10,6 +10,9 @@ app.use(express.json());
 const ethProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
 const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
+const WebSocket = require('ws');
+const web3 = require('@solana/web3.js');
+
 app.post('/select-chain', async (req, res) => {
     const { chain } = req.body;
     try {
@@ -208,6 +211,130 @@ app.get('/amountMONKEYS/:usdt', async (req, res) => {
     res.json({ success: true, monkeys: monkeysAmount });
 });
 
+
+// // Create a WebSocket server
+// const wss = new WebSocket.Server({ port: 8080 });
+// console.log('WebSocket server started on ws://localhost:8080');
+
+// // Connect to the Solana cluster
+// const connection = new web3.Connection(web3.clusterApiUrl('mainnet-beta'), 'confirmed');
+
+// // Wallet address to monitor
+// const publicKey = new web3.PublicKey('6Nd7JbuwazduUWKAV13bcSwB3DwpRwRVcDhKHuVhSnJA');
+
+// async function getRecentTransactions() {
+//     // Fetch the recent transaction signatures involving the wallet
+//     const signatures = await connection.getSignaturesForAddress(publicKey, { limit: 10 });
+//     for (let signatureInfo of signatures) {
+//         // Fetch detailed transaction information
+//         const transaction = await connection.getTransaction(signatureInfo.signature);
+//         // Broadcast transaction details to all connected WebSocket clients
+//         wss.clients.forEach(client => {
+//             if (client.readyState === WebSocket.OPEN) {
+//                 client.send(JSON.stringify(transaction));
+//             }
+//         });
+//     }
+// }
+
+
+
+
+// // Connect to Solana cluster
+// const connection = new web3.Connection(web3.clusterApiUrl('mainnet-beta'), 'confirmed');
+
+// // Function to handle new blocks
+// async function handleBlock(block) {
+//     console.log(`New block: ${block.blockHeight}`);
+//     block.transactions.forEach(tx => {
+//         console.log(`Transaction Hash: ${tx.transaction.signatures[0]}`);
+//     });
+// }
+
+// // Subscribe to confirmed blocks
+// const subscriptionId = connection.onSlotChange(async (slotInfo) => {
+//     try {
+//         const block = await connection.getBlock(slotInfo.slot);
+//         if (block) {
+//             handleBlock(block);
+//         }
+//     } catch (error) {
+//         console.error('Error fetching block:', error);
+//     }
+// });
+
+// console.log('Subscribed to new blocks. Listening for transactions...');
+// // Poll every 30 seconds and broadcast updates
+// setInterval(getRecentTransactions, 30000);
+
+// Handle WebSocket connections
+// wss.on('connection', function connection(ws) {
+//     console.log('Client connected');
+//     ws.on('message', function incoming(message) {
+//         console.log('Received message from client: %s', message);
+//     });
+
+//     ws.on('close', function() {
+//         console.log('Client disconnected');
+//     });
+// });
+
+
+// Set the public key of the wallet you want to monitor
+const publicKey = new web3.PublicKey('6Nd7JbuwazduUWKAV13bcSwB3DwpRwRVcDhKHuVhSnJA');
+
+// Create a WebSocket server
+const wss = new WebSocket.Server({ port: 8080 });
+console.log('WebSocket server started on ws://localhost:8080');
+
+// Connect to Solana cluster
+const connection = new web3.Connection(web3.clusterApiUrl('mainnet-beta'), 'confirmed');
+
+let lastKnownSignature = null;
+
+// This function fetches new transactions for the specified address
+async function fetchTransactions() {
+    const options = { limit: 10 };
+    if (lastKnownSignature) {
+        options.until = lastKnownSignature;
+    }
+    const signatures = await connection.getSignaturesForAddress(publicKey, options);
+    if (signatures.length > 0) {
+        lastKnownSignature = signatures[0].signature;  // Update the last known signature to the most recent
+    }
+    return Promise.all(signatures.map(signature => connection.getTransaction(signature.signature)));
+}
+
+// Broadcast new transactions to all connected WebSocket clients
+async function broadcastNewTransactions() {
+    try {
+        const transactions = await fetchTransactions();
+        if (transactions.length > 0) {
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(transactions));
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching or broadcasting transactions:', error);
+    }
+}
+
+// Poll every 30 seconds
+setInterval(broadcastNewTransactions, 30000);
+
+// Handle WebSocket connections
+wss.on('connection', function connection(ws) {
+    console.log('Client connected');
+    ws.on('message', function incoming(message) {
+        console.log('Received message from client:', message);
+    });
+
+    ws.on('close', function() {
+        console.log('Client disconnected');
+    });
+});
 
 
 app.listen(port, () => {

@@ -16,6 +16,15 @@ const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
 // Verify token address API
+app.get('/hello', async (req, res) => {
+    try {
+        print("Hello")
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+
 app.post('/verify-token', async (req, res) => {
     const { chain, tokenAddress } = req.body;
 

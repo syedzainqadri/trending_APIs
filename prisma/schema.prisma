@@ -16,10 +16,10 @@ datasource db {
 model Order {
   id   Int                   @id @default(autoincrement())
   requestFrom String //flutter or telegram
-  chatID String
+  chatID String?
   chain String
   dex String
-  pairAdress String
+  pairAddress String
   slot String
   price String
   publickey String

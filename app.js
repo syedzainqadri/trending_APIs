@@ -11,10 +11,12 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(cors());
 const WebSocket = require('ws');
+const { stat } = require('fs');
 const wss = new WebSocket.Server({ port: 8080 });
 
 app.post('/createSOL', async (req, res) => {
-    const {chain,dex,pairAddress,paymentType,status } = req.params;
+    const {
+        chain,dex,pairAddress,paymentMethod,orderStatus,requestFrom,slot,price } = req.body;
     const keyPair = Keypair.generate();
     const publicKey = keyPair.publicKey.toString();
     const secretKeyBuffer = Buffer.from(keyPair.secretKey);
@@ -22,23 +24,20 @@ app.post('/createSOL', async (req, res) => {
     try {
         const savedKey = await prisma.order.create({
             data: {
-                chain : chain,
+                requestFrom : requestFrom,
+                chatID : "",
+                chain: chain,
                 dex : dex,
                 pairAddress : pairAddress,
-                paymentType : paymentType,
-                status : status,
-                publicKey: publicKey,
+                slot: slot,
+                price: price,
+                paymentMethod: paymentMethod,
+                orderStatus : orderStatus,
+                publickey: publicKey,
                 secretKeyBase58: secretKeyBase58,
             }
         });
-        res.json({ publicKey: savedKey.publicKey, secretKeyBase58: savedKey.secretKeyBase58 ,
-            chain : chain,
-            dex : dex,
-            pairAddress : pairAddress,
-            paymentType : paymentType,
-            status : status,
-            publicKey: publicKey,
-            secretKeyBase58: secretKeyBase58});
+        res.json({savedKey});
     } catch (error) {
         console.error('Error saving keys to the database:', error);
         res.status(500).json({ error: 'Failed to save keys to the database' });

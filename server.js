@@ -209,14 +209,14 @@ app.get('/volume/h1/:chainId/:pairAddress', async (req, res) => {
 
 const dexUrls = {
     "dextools": {
-        "ethereum": "www.dextools.io/app/en/ether/pairs",
-        "binance smart chain": "www.dextools.io/app/en/bnb/pairs",
-        "solana": "https://www.dextools.io/app/en/solana/pairs"
+        "eth": "www.dextools.io/app/en/ether/pairs",
+        "bsc": "www.dextools.io/app/en/bnb/pairs",
+        "sol": "www.dextools.io/app/en/solana/pairs"
     },
     "dexscreener": {
-        "ethereum": "dexscreener.com/ethereum",
-        "binance smart chain": "dexscreener.com/bsc",
-        "solana": "dexscreener.com/solana"
+        "eth": "dexscreener.com/ethereum",
+        "bsc": "dexscreener.com/bsc",
+        "sol": "dexscreener.com/solana"
     }
 };
 

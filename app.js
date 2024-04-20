@@ -42,7 +42,7 @@ app.post('/createSOL', async (req, res) => {
         //Get balance Loop
         //After 4 min if the result is zero then send the error message otherwise send
         res.json({savedKey, txhash});
-       
+       checkResponse(res);
      
     } catch (error) {
         console.error('Error saving keys to the database:', error);
@@ -54,7 +54,14 @@ async function getSOLBalance(address) {
     const connection = new Connection(clusterApiUrl('mainnet-beta'));
     const publicKey = new PublicKey(address);
     const balance = await connection.getBalance(publicKey);
-    return balance / 1000000000; 
+    finalBalance = balance / 1000000000; 
+    if (wsClient.readyState === WebSocket.OPEN) {
+        wsClient.send(JSON.stringify({ userId: userId, balance: finalBalance }));
+    } else {
+        console.error('WebSocket is not open. Cannot send balance.');
+    }
+
+    return balance;
 }
 
 async function getTokenBalance(walletAddress) {
@@ -77,6 +84,7 @@ async function getTokenBalance(walletAddress) {
     if (response.data.result && response.data.result.value.length > 0) {
         const tokenAmount = response.data.result.value[0].account.data.parsed.info.tokenAmount.amount;
         balance = Number(tokenAmount) / 1000000;
+        //call loop to calculate
          // Check if WebSocket is open before sending data
     if (wsClient.readyState === WebSocket.OPEN) {
             wsClient.send(JSON.stringify({ userId: userId, balance: balance }));
@@ -97,47 +105,48 @@ async function checkResponse(walletAddress) {
     }else{
         getSOLBalance(walletAddress);
     }
+    return true;
 }
 
 
 
 
-const getBalances = async (address, paymentType) => {
-    if (paymentType === 'MONKEYS') {
-        const tokenMintAddress = 'BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC';
-        return getTokenBalance(address, tokenMintAddress);
-    } else {
-        return getSOLBalance(address);
-    }
-};
+// const getBalances = async (address, paymentType) => {
+//     if (paymentType === 'MONKEYS') {
+//         const tokenMintAddress = 'BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC';
+//         return getTokenBalance(address, tokenMintAddress);
+//     } else {
+//         return getSOLBalance(address);
+//     }
+// };
 
-async function getTransactionHistory(address) {
-    const connection = new Connection(clusterApiUrl('mainnet-beta'));
-    const publicKey = new PublicKey(address);
-    const confirmedSignatures = await connection.getConfirmedSignaturesForAddress2(publicKey);
-    return confirmedSignatures.map(signatureInfo => ({
-        signature: signatureInfo.signature,
-        slot: signatureInfo.slot,
-        blockTime: signatureInfo.blockTime ? new Date(signatureInfo.blockTime * 1000).toISOString() : 'unknown'
-    }));
-}
+// async function getTransactionHistory(address) {
+//     const connection = new Connection(clusterApiUrl('mainnet-beta'));
+//     const publicKey = new PublicKey(address);
+//     const confirmedSignatures = await connection.getConfirmedSignaturesForAddress2(publicKey);
+//     return confirmedSignatures.map(signatureInfo => ({
+//         signature: signatureInfo.signature,
+//         slot: signatureInfo.slot,
+//         blockTime: signatureInfo.blockTime ? new Date(signatureInfo.blockTime * 1000).toISOString() : 'unknown'
+//     }));
+// }
 
 
-async function updateTransactionStatus(chatID, status, transactionDetails = null) {
-    try {
-        const updatedTransaction = await prisma.update({
-            where: { chatID },
-            data: {
-                status,
-                transactionDetails: JSON.stringify(transactionDetails) // Storing details as JSON string
-            }
-        });
-        return updatedTransaction;
-    } catch (error) {
-        console.error('Failed to update transaction status:', error);
-        throw new Error('Error updating transaction status in the database');
-    }
-}
+// async function updateTransactionStatus(chatID, status, transactionDetails = null) {
+//     try {
+//         const updatedTransaction = await prisma.update({
+//             where: { chatID },
+//             data: {
+//                 status,
+//                 transactionDetails: JSON.stringify(transactionDetails) // Storing details as JSON string
+//             }
+//         });
+//         return updatedTransaction;
+//     } catch (error) {
+//         console.error('Failed to update transaction status:', error);
+//         throw new Error('Error updating transaction status in the database');
+//     }
+// }
 
 // wss.on('connection', ws => {
 //     const orderData = prisma.order.findMany(
@@ -193,15 +202,15 @@ async function updateTransactionStatus(chatID, status, transactionDetails = null
 //     });
 // });
 
-wss.on('connection', function connection(ws) {
-    console.log('Client connected');
+// wss.on('connection', function connection(ws) {
+//     console.log('Client connected');
 
-        res.json(txhash, status);
-    });
+//         res.json(txhash, status);
+//     });
 
-    ws.on('close', function() {
-        console.log('Client disconnected');
-    });
+//     ws.on('close', function() {
+//         console.log('Client disconnected');
+//     });
 
 
 server.listen(3000, () => {

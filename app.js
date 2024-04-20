@@ -42,8 +42,11 @@ app.post('/createSOL', async (req, res) => {
         //Get balance Loop
         //After 4 min if the result is zero then send the error message otherwise send
         res.json({savedKey, txhash});
-       checkResponse(res);
-     
+        for (let elapsed = 0; elapsed < 240000; elapsed += 30000) {
+            await new Promise(resolve => setTimeout(resolve, 30000));
+            const balance = await checkResponse(address);
+            return balance;
+        }
     } catch (error) {
         console.error('Error saving keys to the database:', error);
         res.status(500).json({ error: 'Failed to save keys to the database' });

@@ -4,10 +4,8 @@ const { Connection, Keypair, PublicKey, clusterApiUrl } = require('@solana/web3.
 const bs58 = require('bs58');
 const cors = require('cors');
 const axios = require('axios');
-const http = require('http');
 const prisma = new PrismaClient();
 const app = express();
-const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 const { ethers } = require('ethers');

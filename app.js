@@ -120,6 +120,7 @@ io.on('connection', function connection(socket) {
 
 
 app.post('/select-chain', async (req, res) => {
+    console.log(req.body)
     const { chain } = req.body;
     try {
         switch (chain) {

@@ -126,6 +126,23 @@ wss.on('connection', function connection(socket) {
     });
 });
 
+app.get('/balance', cors(corsOptions), async (req, res) => {
+    // console.log(req.body)
+    const { paymentMethod, publicKey } = req.body;
+    var currentBalance
+        try {
+           
+            if (paymentMethod === "pu") {
+                currentBalance = await getTokenBalance(publicKey);
+           }else{
+            currentBalance = await getSOLBalance(publicKey);
+           }
+            console.log('Received payment:', currentBalance);
+        } catch (e) {
+            console.error('Error parsing message', e);
+        }
+        res.json({currentBalance});
+});
 
 app.post('/select-chain', cors(corsOptions), async (req, res) => {
     // console.log(req.body)

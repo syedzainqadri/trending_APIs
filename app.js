@@ -1,31 +1,15 @@
 const express = require('express');
-const cors = require('cors');
-// CORS options, adjust 'origin' as needed for security
-const corsOptions = {
-    origin: '*',  // Allows all origins
-    methods: ['POST', 'OPTIONS', 'GET'],  // Allowed methods
-    allowedHeaders: [
-        'Origin',
-        'Content-Type',
-        'X-Amz-Date',
-        'Authorization',
-        'X-Api-Key',
-        'X-Amz-Security-Token',
-        'locale'
-    ],
-    credentials: true,  // Allows credentials
-    optionsSuccessStatus: 200
-  };
 const { PrismaClient } = require('@prisma/client');
 const { Connection, Keypair, PublicKey, clusterApiUrl } = require('@solana/web3.js');
 const bs58 = require('bs58');
+const cors = require('cors');
 const axios = require('axios');
 const http = require('http');
 const prisma = new PrismaClient();
 const app = express();
 const server = http.createServer(app);
+app.use(cors());
 app.use(express.json());
-app.use(cors(corsOptions));
 const { ethers } = require('ethers');
 const ethProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
 const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
@@ -303,7 +287,7 @@ const fetchMonkeysPrice = async () => {
 fetchMonkeysPrice();
 setInterval(fetchMonkeysPrice, 300000); // Update every 5 minutes
 
-app.get('/amountMONKEYS/:usdt', cors(corsOptions), async (req, res) => {
+app.get('/amountMONKEYS/:usdt', async (req, res) => {
     const usdt = parseFloat(req.params.usdt);
     if (isNaN(usdt) || usdt < 0) {
         return res.status(400).json({ success: false, message: 'Invalid dollar amount' });

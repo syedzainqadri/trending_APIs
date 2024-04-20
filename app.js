@@ -95,7 +95,7 @@ async function checkResponse(walletAddress,paymentMethod) {
 }
 
 
-io.on('connection', function connection(socket) {
+wss.on('connection', function connection(socket) {
     socket.on('message', async function incoming(message) {
         // Parse the message back into an object
         var currentBalance

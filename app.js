@@ -12,7 +12,8 @@ app.use(express.json());
 app.use(cors());
 const WebSocket = require('ws');
 const { stat } = require('fs');
-const wss = new WebSocket.Server({ port: 8080 });
+// const wss = new WebSocket.Server({ port: 8080 });
+const io = sockerIO(server);
 
 
 app.post('/createSOL', async (req, res) => {
@@ -92,8 +93,8 @@ async function checkResponse(walletAddress,paymentMethod) {
 }
 
 
-wss.on('connection', function connection(ws) {
-    ws.on('message', async function incoming(message) {
+io.on('connection', function connection(socket) {
+    socket.on('message', async function incoming(message) {
         // Parse the message back into an object
         var currentBalance
         try {

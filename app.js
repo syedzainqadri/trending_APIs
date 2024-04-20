@@ -120,8 +120,9 @@ io.on('connection', function connection(socket) {
 
 
 app.post('/select-chain', async (req, res) => {
-    console.log(req.body)
+    // console.log(req.body)
     const { chain } = req.body;
+    console.log(chain)
     try {
         switch (chain) {
             case 'eth':

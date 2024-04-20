@@ -316,6 +316,11 @@ app.get('/amountMONKEYS/:usdt', async (req, res) => {
     res.json({ success: true, monkeys: monkeysAmount });
 });
 
+app.get('/', async (req, res) => {
+
+        res.json('hello world');
+   
+});
 
 
 server.listen(3000, () => {

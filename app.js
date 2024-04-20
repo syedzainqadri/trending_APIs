@@ -24,7 +24,7 @@ const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
 
-app.post('/createSOL', cors(), async (req, res) => {
+app.post('/createSOL', cors(corsOptions), async (req, res) => {
     const {
         chain,dex,pairAddress,paymentMethod,orderStatus,requestFrom,slot,price } = req.body;
     const txhash = "ljasbdacviwelufhbkjadhfkajsdhfaosidcberkjfhniudhfkajsdfnaksjdfnb"
@@ -126,7 +126,7 @@ wss.on('connection', function connection(socket) {
 });
 
 
-app.post('/select-chain', cors(), async (req, res) => {
+app.post('/select-chain', cors(corsOptions), async (req, res) => {
     // console.log(req.body)
     const { chain } = req.body;
     console.log(chain)
@@ -160,7 +160,7 @@ const ranks = [
     ...Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`) // Ranks 1-30 for Any Tier
 ];
 const bookedSlots = {};
-app.get('/pairs/:chainId/:pairAddresses', cors(), async (req, res) => {
+app.get('/pairs/:chainId/:pairAddresses', cors(corsOptions), async (req, res) => {
     const { chainId, pairAddresses } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddresses}`;
 
@@ -174,7 +174,7 @@ app.get('/pairs/:chainId/:pairAddresses', cors(), async (req, res) => {
 });
 
 // Endpoint to get 1-hour transaction data for a specific pair
-app.get('/txns/1h/:chainId/:pairAddress', cors(), async (req, res) => {
+app.get('/txns/1h/:chainId/:pairAddress', cors(corsOptions), async (req, res) => {
     const { chainId, pairAddress } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
 
@@ -190,7 +190,7 @@ app.get('/txns/1h/:chainId/:pairAddress', cors(), async (req, res) => {
 
 
 // Endpoint to get 5-minute volume data for a specific pair
-app.get('/volume/m5/:chainId/:pairAddress', cors(), async (req, res) => {
+app.get('/volume/m5/:chainId/:pairAddress', cors(corsOptions), async (req, res) => {
     const { chainId, pairAddress } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
 
@@ -205,7 +205,7 @@ app.get('/volume/m5/:chainId/:pairAddress', cors(), async (req, res) => {
 });
 
 // Endpoint to get 1-hour volume data for a specific pair
-app.get('/volume/h1/:chainId/:pairAddress', cors(), async (req, res) => {
+app.get('/volume/h1/:chainId/:pairAddress', cors(corsOptions), async (req, res) => {
     const { chainId, pairAddress } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
 
@@ -233,7 +233,7 @@ const dexUrls = {
     }
 };
 
-app.post('/api/url', cors(), (req, res) => {
+app.post('/api/url', cors(corsOptions), (req, res) => {
     const { dex, chain, slot, pairAddress } = req.body;
     if (!dex || !chain) {
         return res.status(400).send('Both dex and chain fields are required in the request body.');
@@ -258,7 +258,7 @@ app.post('/api/url', cors(), (req, res) => {
     res.json({ message: `Slot ${slot} successfully booked for ${dex}.`, url: `${url}/${pairAddress}` });
 });
 
-app.post('/USDTtoBNB/:usdtAmount', cors(), async (req, res) => {
+app.post('/USDTtoBNB/:usdtAmount', cors(corsOptions), async (req, res) => {
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {
         const priceResponse = await axios.get('https://api.poloniex.com/markets/bnb_usdt/price');
@@ -270,7 +270,7 @@ app.post('/USDTtoBNB/:usdtAmount', cors(), async (req, res) => {
     }
 });
 
-app.post('/USDTtoETH/:usdtAmount', cors(), async (req, res) => {
+app.post('/USDTtoETH/:usdtAmount', cors(corsOptions), async (req, res) => {
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {
         const priceResponse = await axios.get('https://api.poloniex.com/markets/eth_usdt/price');
@@ -282,7 +282,7 @@ app.post('/USDTtoETH/:usdtAmount', cors(), async (req, res) => {
     }
 });
 
-app.post('/USDTtoETH/:usdtAmount', cors(), async (req, res) => {
+app.post('/USDTtoETH/:usdtAmount', cors(corsOptions), async (req, res) => {
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {
         const priceResponse = await axios.get('https://api.poloniex.com/markets/sol_usdt/price');
@@ -313,7 +313,7 @@ const fetchMonkeysPrice = async () => {
 fetchMonkeysPrice();
 setInterval(fetchMonkeysPrice, 300000); // Update every 5 minutes
 
-app.get('/amountMONKEYS/:usdt', cors(), async (req, res) => {
+app.get('/amountMONKEYS/:usdt', cors(corsOptions), async (req, res) => {
     const usdt = parseFloat(req.params.usdt);
     if (isNaN(usdt) || usdt < 0) {
         return res.status(400).json({ success: false, message: 'Invalid dollar amount' });

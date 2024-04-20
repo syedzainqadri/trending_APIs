@@ -92,47 +92,12 @@ async function getTokenBalance(walletAddress) {
 }
 
 
-async function checkResponse(walletAddress,paymentMethod) {
-    if (paymentMethod === "Monkeys") {
-         getTokenBalance(walletAddress);
-    }else{
-        getSOLBalance(walletAddress);
-    }
-    return true;
-}
-
-
-// wss.on('connection', function connection(socket) {
-//     socket.on('message', async function incoming(message) {
-//         // Parse the message back into an object
-//         var currentBalance
-//         try {
-//             const params = JSON.parse(message);
-           
-//             if (params.paymentMethod === "Monkeys") {
-//                 currentBalance = await getTokenBalance(params.publicKey);
-//            }else{
-//             currentBalance = await getSOLBalance(params.publicKey);
-//            }
-//             console.log('Received payment:', currentBalance);
-
-//             // You can now use these parameters to perform actions
-//             if (params.action === 'sendBal') {
-//                 ws.send(JSON.stringify(currentBalance));
-//             }
-//         } catch (e) {
-//             console.error('Error parsing message', e);
-//         }
-//     });
-// });
-
 app.get('/balance', cors(corsOptions), async (req, res) => {
     // console.log(req.body)
     const { paymentMethod, publicKey } = req.body;
     var currentBalance
         try {
-           
-            if (paymentMethod === "pu") {
+            if (paymentMethod === "Monkeys") {
                 currentBalance = await getTokenBalance(publicKey);
            }else{
             currentBalance = await getSOLBalance(publicKey);

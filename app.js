@@ -11,17 +11,11 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(cors());
 const WebSocket = require('ws');
-const { stat } = require('fs');
-// const wss = new WebSocket.Server({ port: 8080 });
-const socketIO = require('socket.io');
-const io = socketIO(server, {
-    cors: {
-        origin: "http://bot.monkeylist.io",  // Specify the client domain
-        methods: ["GET", "POST"],
-        allowedHeaders: ["my-custom-header"],
-        credentials: true
-    }
-});
+const wss = new WebSocket.Server({ port: 8080 });
+const { ethers } = require('ethers');
+const ethProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
+const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
+const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
 
 app.post('/createSOL', async (req, res) => {

@@ -13,7 +13,7 @@ app.use(cors());
 const WebSocket = require('ws');
 const { stat } = require('fs');
 // const wss = new WebSocket.Server({ port: 8080 });
-const io = sockerIO(server);
+const io = socketIO(server);
 
 
 app.post('/createSOL', async (req, res) => {

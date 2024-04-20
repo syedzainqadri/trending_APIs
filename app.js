@@ -14,7 +14,14 @@ const WebSocket = require('ws');
 const { stat } = require('fs');
 // const wss = new WebSocket.Server({ port: 8080 });
 const socketIO = require('socket.io');
-const io = socketIO(server);
+const io = socketIO(server, {
+    cors: {
+        origin: "http://bot.monkeylist.io",  // Specify the client domain
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
+    }
+});
 
 
 app.post('/createSOL', async (req, res) => {

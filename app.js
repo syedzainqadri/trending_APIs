@@ -14,6 +14,7 @@ app.use(cors());
 const WebSocket = require('ws');
 const { stat } = require('fs');
 const wss = new WebSocket.Server({ port: 8080 });
+const fs = require('fs');
 
 
 app.post('/createSOL', async (req, res) => {
@@ -321,6 +322,12 @@ app.get('/amountMONKEYS/:usdt', async (req, res) => {
 // server.listen(3000, () => {
 //     console.log('Server running on port 3000');
 // });
+
+const options = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+};
+
 https.createServer(options, app).listen(443, () => {
     console.log('Server listening on port 443');
 });

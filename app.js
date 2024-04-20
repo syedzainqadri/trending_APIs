@@ -16,9 +16,9 @@ const app = express();
 const server = http.createServer(app);
 app.use(express.json());
 app.use(cors(corsOptions));
-const WebSocket = require('ws');
+// const WebSocket = require('ws');
 // const wss = new WebSocket('ws://bot.monkeyslist.io:8080');
-const wss = new WebSocket.Server({port: 8080});
+// const wss = new WebSocket.Server({port: 8080});
 const { ethers } = require('ethers');
 const ethProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
 const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
@@ -102,29 +102,29 @@ async function checkResponse(walletAddress,paymentMethod) {
 }
 
 
-wss.on('connection', function connection(socket) {
-    socket.on('message', async function incoming(message) {
-        // Parse the message back into an object
-        var currentBalance
-        try {
-            const params = JSON.parse(message);
+// wss.on('connection', function connection(socket) {
+//     socket.on('message', async function incoming(message) {
+//         // Parse the message back into an object
+//         var currentBalance
+//         try {
+//             const params = JSON.parse(message);
            
-            if (params.paymentMethod === "Monkeys") {
-                currentBalance = await getTokenBalance(params.publicKey);
-           }else{
-            currentBalance = await getSOLBalance(params.publicKey);
-           }
-            console.log('Received payment:', currentBalance);
+//             if (params.paymentMethod === "Monkeys") {
+//                 currentBalance = await getTokenBalance(params.publicKey);
+//            }else{
+//             currentBalance = await getSOLBalance(params.publicKey);
+//            }
+//             console.log('Received payment:', currentBalance);
 
-            // You can now use these parameters to perform actions
-            if (params.action === 'sendBal') {
-                ws.send(JSON.stringify(currentBalance));
-            }
-        } catch (e) {
-            console.error('Error parsing message', e);
-        }
-    });
-});
+//             // You can now use these parameters to perform actions
+//             if (params.action === 'sendBal') {
+//                 ws.send(JSON.stringify(currentBalance));
+//             }
+//         } catch (e) {
+//             console.error('Error parsing message', e);
+//         }
+//     });
+// });
 
 app.get('/balance', cors(corsOptions), async (req, res) => {
     // console.log(req.body)

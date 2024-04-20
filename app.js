@@ -4,7 +4,6 @@ const cors = require('cors');
 const corsOptions = {
     origin: '*',  // This allows all domains. For production, set specific domains or use a function to validate.
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    optionsSuccessStatus: 200 // For legacy browser support
   };
 const { PrismaClient } = require('@prisma/client');
 const { Connection, Keypair, PublicKey, clusterApiUrl } = require('@solana/web3.js');

@@ -2,8 +2,19 @@ const express = require('express');
 const cors = require('cors');
 // CORS options, adjust 'origin' as needed for security
 const corsOptions = {
-    origin: '*',  // This allows all domains. For production, set specific domains or use a function to validate.
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: '*',  // Allows all origins
+    methods: ['POST', 'OPTIONS', 'GET'],  // Allowed methods
+    allowedHeaders: [
+        'Origin',
+        'Content-Type',
+        'X-Amz-Date',
+        'Authorization',
+        'X-Api-Key',
+        'X-Amz-Security-Token',
+        'locale'
+    ],
+    credentials: true,  // Allows credentials
+    optionsSuccessStatus: 200
   };
 const { PrismaClient } = require('@prisma/client');
 const { Connection, Keypair, PublicKey, clusterApiUrl } = require('@solana/web3.js');

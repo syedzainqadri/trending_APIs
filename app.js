@@ -17,6 +17,7 @@ const ethProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura
 const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
+
 app.post('/createSOL', async (req, res) => {
     const {
         chain,dex,pairAddress,paymentMethod,orderStatus,requestFrom,slot,price } = req.body;
@@ -94,8 +95,8 @@ async function checkResponse(walletAddress,paymentMethod) {
 }
 
 
-wss.on('connection', function connection(ws) {
-    ws.on('message', async function incoming(message) {
+io.on('connection', function connection(socket) {
+    socket.on('message', async function incoming(message) {
         // Parse the message back into an object
         var currentBalance
         try {
@@ -120,7 +121,9 @@ wss.on('connection', function connection(ws) {
 
 
 app.post('/select-chain', async (req, res) => {
+    // console.log(req.body)
     const { chain } = req.body;
+    console.log(chain)
     try {
         switch (chain) {
             case 'eth':
@@ -317,6 +320,11 @@ app.get('/amountMONKEYS/:usdt', async (req, res) => {
     res.json({ success: true, monkeys: monkeysAmount });
 });
 
+app.get('/', async (req, res) => {
+
+        res.json('hello world');
+   
+});
 
 
 server.listen(3000, () => {

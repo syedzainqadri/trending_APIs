@@ -12,7 +12,8 @@ app.use(express.json());
 app.use(cors());
 const WebSocket = require('ws');
 const { stat } = require('fs');
-const wsClient = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: 8080 });
+
 
 app.post('/createSOL', async (req, res) => {
     const {
@@ -38,17 +39,7 @@ app.post('/createSOL', async (req, res) => {
                 secretKeyBase58: secretKeyBase58,
             }
         });
-        //Get balance Loop
-        //After 4 min if the result is zero then send the error message otherwise send
-        checkResponse(publicKey,paymentMethod);
-        res.json({savedKey, txhash});
-        // const balance = await checkResponse(address,paymentMethod);
-        //     return balance;
-        // for (let elapsed = 0; elapsed < 240000; elapsed += 30000) {
-        //     await new Promise(resolve => setTimeout(resolve, 30000));
-        //     const balance = await checkResponse(address,paymentMethod);
-        //     return balance;
-        // }
+        res.json({savedKey});
 
     } catch (error) {
         console.error('Error saving keys to the database:', error);
@@ -61,14 +52,7 @@ async function getSOLBalance(address) {
     const publicKey = new PublicKey(address);
     const balance = await connection.getBalance(publicKey);
     finalBalance = balance / 1000000000; 
-    if (wsClient.readyState === WebSocket.OPEN) {
-        wsClient.send(JSON.stringify('processing'));
-        // wsClient.send(JSON.stringify({ userId: userId, balance: finalBalance }));
-    } else {
-        console.error('WebSocket is not open. Cannot send balance.');
-    }
-
-    return balance;
+    return finalBalance;
 }
 
 async function getTokenBalance(walletAddress) {
@@ -91,13 +75,6 @@ async function getTokenBalance(walletAddress) {
     if (response.data.result && response.data.result.value.length > 0) {
         const tokenAmount = response.data.result.value[0].account.data.parsed.info.tokenAmount.amount;
         balance = Number(tokenAmount) / 1000000;
-    if (wsClient.readyState === WebSocket.OPEN) {
-        wsClient.send(JSON.stringify('processing'));
-            // wsClient.send(JSON.stringify({ userId: userId, balance: balance }));
-        } else {
-            console.error('WebSocket is not open. Cannot send balance.');
-        }
-
         return balance;
     } else {
         return 0;
@@ -115,17 +92,28 @@ async function checkResponse(walletAddress,paymentMethod) {
 }
 
 
-wsClient.on('connection', function connection(ws) {
-    console.log('A new client connected');
+wss.on('connection', function connection(ws) {
+    ws.on('message', async function incoming(message) {
+        // Parse the message back into an object
+        var currentBalance
+        try {
+            const params = JSON.parse(message);
+           
+            if (params.paymentMethod === "Monkeys") {
+                currentBalance = await getTokenBalance(params.publicKey);
+           }else{
+            currentBalance = await getSOLBalance(params.publicKey);
+           }
+            console.log('Received payment:', currentBalance);
 
-
-// ws.on('message', function incoming(message) {
-//     console.log('received: %s', message);
-// });
-ws.on('open', function open() {
-    console.log('WebSocket connection established');
-});
-
+            // You can now use these parameters to perform actions
+            if (params.action === 'sendBal') {
+                ws.send(JSON.stringify(currentBalance));
+            }
+        } catch (e) {
+            console.error('Error parsing message', e);
+        }
+    });
 });
 
 

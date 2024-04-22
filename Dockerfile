@@ -6,5 +6,5 @@ RUN npm install
 COPY . .
 COPY prisma ./prisma
 RUN npx prisma generate
-EXPOSE 8080
+EXPOSE 3000
 CMD ["node", "app.js"]

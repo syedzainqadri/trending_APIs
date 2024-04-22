@@ -8,10 +8,10 @@ const prisma = new PrismaClient();
 const app = express();
 app.use(cors());
 app.use(express.json());
-const { ethers } = require('ethers');
-const ethProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
+const { JsonRpcProvider } = require('ethers');
+const ethProvider = new JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
 const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
-const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
+const bscProvider = new JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
 
 app.post('/createSOL', async (req, res) => {

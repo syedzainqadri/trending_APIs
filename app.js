@@ -15,6 +15,7 @@ const bscProvider = new JsonRpcProvider('https://bsc-dataseed.binance.org/');
 
 
 app.post('/createSOL', async (req, res) => {
+    console.log('create sol api hit')
     const {
         chain,dex,pairAddress,paymentMethod,orderStatus,requestFrom,slot,price } = req.body;
     const txhash = "ljasbdacviwelufhbkjadhfkajsdhfaosidcberkjfhniudhfkajsdfnaksjdfnb"
@@ -82,7 +83,7 @@ async function getTokenBalance(walletAddress) {
 
 
 app.get('/balance', async (req, res) => {
-    // console.log(req.body)
+    console.log('balance api hit')
     const { paymentMethod, publicKey } = req.body;
     var currentBalance
         try {
@@ -99,7 +100,7 @@ app.get('/balance', async (req, res) => {
 });
 
 app.post('/select-chain', async (req, res) => {
-    // console.log(req.body)
+    console.log('select chain api hit')
     const { chain } = req.body;
     console.log(chain)
     try {
@@ -133,6 +134,7 @@ const ranks = [
 ];
 const bookedSlots = {};
 app.get('/pairs/:chainId/:pairAddresses', async (req, res) => {
+    console.log('validate pair addresses api hit')
     const { chainId, pairAddresses } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddresses}`;
 
@@ -147,6 +149,7 @@ app.get('/pairs/:chainId/:pairAddresses', async (req, res) => {
 
 // Endpoint to get 1-hour transaction data for a specific pair
 app.get('/txns/1h/:chainId/:pairAddress', async (req, res) => {
+    console.log('txns validation api hits')
     const { chainId, pairAddress } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
 
@@ -163,6 +166,7 @@ app.get('/txns/1h/:chainId/:pairAddress', async (req, res) => {
 
 // Endpoint to get 5-minute volume data for a specific pair
 app.get('/volume/m5/:chainId/:pairAddress', async (req, res) => {
+    console.log('volume api hit')
     const { chainId, pairAddress } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
 
@@ -178,6 +182,7 @@ app.get('/volume/m5/:chainId/:pairAddress', async (req, res) => {
 
 // Endpoint to get 1-hour volume data for a specific pair
 app.get('/volume/h1/:chainId/:pairAddress', async (req, res) => {
+    console.log('volume against pair address api hit')
     const { chainId, pairAddress } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
 
@@ -206,6 +211,7 @@ const dexUrls = {
 };
 
 app.post('/api/url', (req, res) => {
+    console.log('url api hit')
     const { dex, chain, slot, pairAddress } = req.body;
     if (!dex || !chain) {
         return res.status(400).send('Both dex and chain fields are required in the request body.');
@@ -231,6 +237,7 @@ app.post('/api/url', (req, res) => {
 });
 
 app.post('/USDTtoBNB/:usdtAmount', async (req, res) => {
+    console.log('price conversion api hit')
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {
         const priceResponse = await axios.get('https://api.poloniex.com/markets/bnb_usdt/price');
@@ -243,6 +250,7 @@ app.post('/USDTtoBNB/:usdtAmount', async (req, res) => {
 });
 
 app.post('/USDTtoETH/:usdtAmount', async (req, res) => {
+    console.log('usdt to eth api hit')
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {
         const priceResponse = await axios.get('https://api.poloniex.com/markets/eth_usdt/price');
@@ -255,6 +263,7 @@ app.post('/USDTtoETH/:usdtAmount', async (req, res) => {
 });
 
 app.post('/USDTtoETH/:usdtAmount', async (req, res) => {
+    console.log('Usdt toETH')
     const usdtAmount = parseFloat(req.params.usdtAmount);
     try {
         const priceResponse = await axios.get('https://api.poloniex.com/markets/sol_usdt/price');
@@ -286,6 +295,7 @@ fetchMonkeysPrice();
 setInterval(fetchMonkeysPrice, 300000); // Update every 5 minutes
 
 app.get('/amountMONKEYS/:usdt', async (req, res) => {
+    console.log('amountMonkeys api hit')
     const usdt = parseFloat(req.params.usdt);
     if (isNaN(usdt) || usdt < 0) {
         return res.status(400).json({ success: false, message: 'Invalid dollar amount' });

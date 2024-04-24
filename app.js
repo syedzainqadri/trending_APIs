@@ -134,13 +134,25 @@ const ranks = [
 ];
 const bookedSlots = {};
 app.get('/pairs/:chainId/:pairAddresses', async (req, res) => {
-    console.log('validate pair addresses api hit')
+    console.log('Validate pair addresses API hit');
     const { chainId, pairAddresses } = req.params;
     const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddresses}`;
 
     try {
         const response = await axios.get(url);
-        res.json(response.data);
+        const volume = response.data.pair.volume.h24;
+        if (response.data && response.data.pairs) {
+            const pairsData = response.data.pairs.map(pair => ({
+                pairAddress: pair.pairAddress,
+                blockchain: pair.chain,
+                baseToken: pair.baseToken.name, 
+                quoteToken: pair.quoteToken.name, 
+                volume24h: volume
+            }));
+            res.json(pairsData);
+        } else {
+            throw new Error("Invalid API response structure");
+        }
     } catch (error) {
         console.error('Error fetching data:', error.message);
         res.status(500).json({ error: 'Failed to fetch data' });

@@ -336,7 +336,7 @@ async function getDiscountedMonkeysValue(usdtAmount) {
 app.post('/conversion', async (req, res) => {
     const { paymentType, usdtAmount } = req.body;
     try {
-        if (paymentType === 'SOL') {
+        if (paymentType === 'Sol') {
             const { success, solAmount } = await getSolAmount(usdtAmount);
             if (success) {
                 res.json({ paymentType, solAmount });

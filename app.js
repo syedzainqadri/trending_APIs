@@ -294,18 +294,69 @@ const fetchMonkeysPrice = async () => {
 fetchMonkeysPrice();
 setInterval(fetchMonkeysPrice, 300000); // Update every 5 minutes
 
-app.get('/amountMONKEYS/:usdt', async (req, res) => {
-    console.log('amountMonkeys api hit')
-    const usdt = parseFloat(req.params.usdt);
-    if (isNaN(usdt) || usdt < 0) {
-        return res.status(400).json({ success: false, message: 'Invalid dollar amount' });
+async function getSolAmount(usdtAmount) {
+    try {
+        const response = await axios.get('https://price.jup.ag/v4/price?ids=So11111111111111111111111111111111111111112');
+        const pricePerSOL = response.data.data.So11111111111111111111111111111111111111112.price;
+        const solAmount = usdtAmount / pricePerSOL;
+        return { success: true, solAmount };
+    } catch (error) {
+        console.error('Error fetching SOL price:', error);
+        return { success: false, error: 'Failed to fetch price' };
     }
-    if (monkeysPrice === null) {
-        return res.status(503).json({ success: false, message: 'MONKEYS price not available. Try again later.' });
+}
+async function getMonkeysAmount(usdtAmount) {
+    try {
+        // Call the external API to get the current SOL price in USDT
+        const response = await axios.get('https://price.jup.ag/v4/price?ids=BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC');
+        const pricePerSOL = response.data.data.BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC.price;
+        
+        // Calculate the amount of SOL that can be bought with the given USDT
+        const solAmount = usdtAmount / pricePerSOL;
+        
+        return { success: true, solAmount };
+    } catch (error) {
+        console.error('Error fetching SOL price:', error);
+        return { success: false, error: 'Failed to fetch price' };
     }
+}
+async function getDiscountedMonkeysValue(usdtAmount) {
+    try {
+        const response = await axios.get('https://price.jup.ag/v4/price?ids=BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC');
+        const pricePerSOL = response.data.data.BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC.price;
+        const solAmount = usdtAmount / pricePerSOL;
+        const discountedMonkeysValue = solAmount * 0.8;
+        return { success: true, discountedMonkeysValue };
+    } catch (error) {
+        console.error('Error fetching SOL price:', error);
+        return { success: false, error: 'Failed to fetch price' };
+    }
+}
 
-    const monkeysAmount = usdt / monkeysPrice;
-    res.json({ success: true, monkeys: monkeysAmount });
+app.post('/conversion', async (req, res) => {
+    const { paymentType, usdtAmount } = req.body;
+    try {
+        if (paymentType === 'SOL') {
+            const { success, solAmount } = await getSolAmount(usdtAmount);
+            if (success) {
+                res.json({ paymentType, solAmount });
+            } else {
+                throw new Error('Failed to fetch SOL amount');
+            }
+        } else if (paymentType === 'Monkeys') {
+            const { success, discountedMonkeysValue } = await getDiscountedMonkeysValue(usdtAmount);
+            if (success) {
+                res.json({ paymentType, discountAmount: discountedMonkeysValue });
+            } else {
+                throw new Error('Failed to fetch discounted Monkeys value');
+            }
+        } else {
+            res.status(400).json({ success: false, error: 'Invalid payment type' });
+        }
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 app.get('/', async (req, res) => {

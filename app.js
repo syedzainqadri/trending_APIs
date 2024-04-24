@@ -294,17 +294,6 @@ const fetchMonkeysPrice = async () => {
 fetchMonkeysPrice();
 setInterval(fetchMonkeysPrice, 300000); // Update every 5 minutes
 
-async function getSolAmount(usdtAmount) {
-    try {
-        const response = await axios.get('https://price.jup.ag/v4/price?ids=So11111111111111111111111111111111111111112');
-        const pricePerSOL = response.data.data.So11111111111111111111111111111111111111112.price;
-        const solAmount = usdtAmount / pricePerSOL;
-        return { success: true, solAmount };
-    } catch (error) {
-        console.error('Error fetching SOL price:', error);
-        return { success: false, error: 'Failed to fetch price' };
-    }
-}
 async function getMonkeysAmount(usdtAmount) {
     try {
         // Call the external API to get the current SOL price in USDT
@@ -320,12 +309,24 @@ async function getMonkeysAmount(usdtAmount) {
         return { success: false, error: 'Failed to fetch price' };
     }
 }
+async function getSolAmount(usdtAmount) {
+    try {
+        const response = await axios.get('https://price.jup.ag/v4/price?ids=So11111111111111111111111111111111111111112');
+        const pricePerSOL = response.data.data.So11111111111111111111111111111111111111112.price;
+        const solAmount = usdtAmount / pricePerSOL;
+        return { success: true, solAmount };
+    } catch (error) {
+        console.error('Error fetching SOL price:', error);
+        return { success: false, error: 'Failed to fetch price' };
+    }
+}
+
 async function getDiscountedMonkeysValue(usdtAmount) {
     try {
         const response = await axios.get('https://price.jup.ag/v4/price?ids=BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC');
         const pricePerSOL = response.data.data.BAAagvYQvJ8NodiwFh8KwBGWCTRmwofPzP53K9Fc2TjC.price;
         const solAmount = usdtAmount / pricePerSOL;
-        const discountedMonkeysValue = solAmount * 0.8;
+        const discountedMonkeysValue = solAmount * 0.8; // Apply a 20% discount
         return { success: true, discountedMonkeysValue };
     } catch (error) {
         console.error('Error fetching SOL price:', error);
@@ -339,7 +340,7 @@ app.post('/conversion', async (req, res) => {
         if (paymentType === 'Sol') {
             const { success, solAmount } = await getSolAmount(usdtAmount);
             if (success) {
-                res.json({ paymentType, amount });
+                res.json({ paymentType, amount: solAmount });
             } else {
                 throw new Error('Failed to fetch SOL amount');
             }

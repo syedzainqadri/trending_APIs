@@ -223,28 +223,34 @@ const dexUrls = {
 };
 
 app.post('/api/url', (req, res) => {
-    console.log('url api hit')
+    console.log('URL API hit');
     const { dex, chain, slot, pairAddress } = req.body;
-    if (!dex || !chain) {
-        return res.status(400).send('Both dex and chain fields are required in the request body.');
+
+    if (!dex || !chain || !['1-3', '4-9', 'any'].includes(slot)) {
+        return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-9, any) are required.');
     }
     const dexKey = dex.toLowerCase().replace(/\s+/g, '');
     const chainKey = chain.toLowerCase();
     const url = dexUrls[dexKey]?.[chainKey];
+
     if (!url) {
         return res.status(404).send('No URL found for the provided dex and chain combination.');
     }
+
     if (!bookedSlots[slot]) {
         bookedSlots[slot] = {};
     }
-    if (bookedSlots[slot][dex]) {
+    if (bookedSlots[slot][dexKey]) {
         return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
     }
-    let slotFullyBooked = Object.keys(dexUrls).every(dexId => bookedSlots[slot][dexId]);
-    if (slotFullyBooked) {
-        return res.status(409).json({ message: `All DEXs are booked for slot ${slot}. Please choose a different slot.` });
-    }
-    bookedSlots[slot][dex] = true;
+
+    bookedSlots[slot][dexKey] = true;
+    // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
+    setTimeout(() => {
+        delete bookedSlots[slot][dexKey];
+        console.log(`Slot ${slot} for ${dex} has been released.`);
+    }, 10800000);  
+
     res.json({ message: `Slot ${slot} successfully booked for ${dex}.`, url: `${url}/${pairAddress}` });
 });
 

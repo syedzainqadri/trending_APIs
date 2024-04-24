@@ -339,14 +339,14 @@ app.post('/conversion', async (req, res) => {
         if (paymentType === 'Sol') {
             const { success, solAmount } = await getSolAmount(usdtAmount);
             if (success) {
-                res.json({ paymentType, solAmount });
+                res.json({ paymentType, amount });
             } else {
                 throw new Error('Failed to fetch SOL amount');
             }
         } else if (paymentType === 'Monkeys') {
             const { success, discountedMonkeysValue } = await getDiscountedMonkeysValue(usdtAmount);
             if (success) {
-                res.json({ paymentType, discountAmount: discountedMonkeysValue });
+                res.json({ paymentType, amount: discountedMonkeysValue });
             } else {
                 throw new Error('Failed to fetch discounted Monkeys value');
             }

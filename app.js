@@ -226,8 +226,8 @@ app.post('/api/url', (req, res) => {
     console.log('URL API hit');
     const { dex, chain, slot, pairAddress } = req.body;
 
-    if (!dex || !chain || !['1-3', '4-9', 'any'].includes(slot)) {
-        return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-9, any) are required.');
+    if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
+        return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
     }
     const dexKey = dex.toLowerCase().replace(/\s+/g, '');
     const chainKey = chain.toLowerCase();

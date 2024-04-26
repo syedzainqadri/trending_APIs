@@ -226,9 +226,11 @@ app.post('/api/url', (req, res) => {
     console.log('URL API hit');
     const { dex, chain, slot, pairAddress } = req.body;
 
+    // Validate required fields
     if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
         return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
     }
+
     const dexKey = dex.toLowerCase().replace(/\s+/g, '');
     const chainKey = chain.toLowerCase();
     const url = dexUrls[dexKey]?.[chainKey];
@@ -245,14 +247,22 @@ app.post('/api/url', (req, res) => {
     }
 
     bookedSlots[slot][dexKey] = true;
+
     // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
     setTimeout(() => {
         delete bookedSlots[slot][dexKey];
         console.log(`Slot ${slot} for ${dex} has been released.`);
-    }, 10800000);  
+    }, 10800000);
 
-    res.json({ message: `Slot ${slot} successfully booked for ${dex}.`, url: `${url}/${pairAddress}` });
+    // Include the full URL, pairAddress, and chain in the response
+    res.json({
+        message: `Slot ${slot} successfully booked for ${dex}.`,
+        url: `${url}/${pairAddress}`,
+        pairAddress: pairAddress,
+        chain: chain
+    });
 });
+
 
 app.post('/USDTtoBNB/:usdtAmount', async (req, res) => {
     console.log('price conversion api hit')
@@ -389,4 +399,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-

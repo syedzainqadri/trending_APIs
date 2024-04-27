@@ -47,12 +47,26 @@ app.post('/createSOL', async (req, res) => {
     }
 });
 
-async function getSOLBalance(address) {
-    const connection = new Connection(clusterApiUrl('mainnet-beta'));
-    const publicKey = new PublicKey(address);
-    const balance = await connection.getBalance(publicKey);
-    finalBalance = balance / 1000000000; 
-    return finalBalance;
+async function convertBs58ToUint8Array(secretBs58Key) {
+    if (typeof secretBs58Key !== 'string') {
+        throw new Error('Invalid input type: secretBs58Key must be a string.');
+    }
+    try {
+        return new Uint8Array(bs58.decode(secretBs58Key));
+    } catch (error) {
+        throw new Error('Failed to decode and convert the key: ' + error.message);
+    }
+}
+
+
+async function getBalance(walletAddress) {
+    try {
+        const publicKey = new PublicKey(walletAddress);
+        const balance = await connection.getBalance(publicKey);
+        return balance; // Return balance in lamports for internal calculation
+    } catch (error) {
+        throw error;
+    }
 }
 
 async function getTokenBalance(walletAddress) {
@@ -376,6 +390,60 @@ app.post('/conversion', async (req, res) => {
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/send-sol', async (req, res) => {
+    const { fromSecret, toPubkey } = req.body;
+    if (!fromSecret || !toPubkey) {
+        return res.status(400).json({
+            success: false,
+            message: 'Missing required parameters: fromSecret and toPubkey'
+        });
+    }
+    try {
+        const secretKeyUint8Array = await convertBs58ToUint8Array(fromSecret);
+        const fromKeypair = Keypair.fromSecretKey(secretKeyUint8Array);
+        const toPublicKey = new PublicKey(toPubkey);
+        const balance = await getBalance(fromKeypair.publicKey);
+        const sendingAmount = balance - (0.000005 * LAMPORTS_PER_SOL); // Subtract transaction fee
+
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: fromKeypair.publicKey,
+                toPubkey: toPublicKey,
+                lamports: sendingAmount
+            })
+        );
+        const signature = await connection.sendTransaction(transaction, [fromKeypair], { skipPreflight: false, preflightCommitment: 'single' });
+        await connection.confirmTransaction(signature, 'single');
+        res.status(200).json({
+            success: true,
+            message: 'Transaction successful!',
+            transactionId: signature
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Transaction failed: ' + error.message
+        });
+    }
+});
+
+app.get('/balance/:walletAddress', async (req, res) => {
+    try {
+        const walletAddress = req.params.walletAddress;
+        const balance = await getBalance(walletAddress);
+        res.status(200).json({
+            success: true,
+            address: walletAddress,
+            balance: balance / LAMPORTS_PER_SOL // Convert lamports to SOL
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get balance: ' + error.message
+        });
     }
 });
 

@@ -132,7 +132,6 @@ const ranks = [
     ...Array.from({ length: 5 }, (_, i) => `Tier 2 Rank ${i + 4}`), // Ranks 4-8
     ...Array.from({ length: 30 }, (_, i) => `Any Tier Rank ${i + 1}`) // Ranks 1-30 for Any Tier
 ];
-const bookedSlots = {};
 app.get('/pairs/:chainId/:pairAddresses', async (req, res) => {
     console.log('Validate pair addresses API hit');
     const { chainId, pairAddresses } = req.params;
@@ -208,32 +207,24 @@ app.get('/volume/h1/:chainId/:pairAddress', async (req, res) => {
     }
 });
 
-// Sample URL map for DEXs
 const dexUrls = {
-    "dextools": {
-        "eth": "https://www.dextools.io/app/en/ether/pair-explorer",
-        "bsc": "https://www.dextools.io/app/en/bsc/pair-explorer",
-        "sol": "https://www.dextools.io/app/en/solana/pair-explorer"
-    },
-    "dexscreener": {
-        "eth": "https://dexscreener.com/ethereum",
-        "bsc": "https://dexscreener.com/bsc",
-        "sol": "https://dexscreener.com/solana"
-    }
+    "dextools": "https://www.dextools.io/app/en/",
+    "dexscreener": "https://dexscreener.com/"
 };
+
+const bookedSlots = {};
 
 app.post('/api/url', (req, res) => {
     console.log('URL API hit');
     const { dex, chain, slot, pairAddress } = req.body;
 
-    // Validate required fields
     if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
         return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
     }
-
+    
     const dexKey = dex.toLowerCase().replace(/\s+/g, '');
-    const chainKey = chain.toLowerCase();
-    const url = dexUrls[dexKey]?.[chainKey];
+    const chainKey = chain.toLowerCase(); // chainKey is declared but not used
+    const url = dexUrls[dexKey];
 
     if (!url) {
         return res.status(404).send('No URL found for the provided dex and chain combination.');
@@ -242,24 +233,24 @@ app.post('/api/url', (req, res) => {
     if (!bookedSlots[slot]) {
         bookedSlots[slot] = {};
     }
+
     if (bookedSlots[slot][dexKey]) {
         return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
     }
 
     bookedSlots[slot][dexKey] = true;
-
     // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
     setTimeout(() => {
         delete bookedSlots[slot][dexKey];
         console.log(`Slot ${slot} for ${dex} has been released.`);
     }, 10800000);
 
-    // Include the full URL, pairAddress, and chain in the response
-    res.json({
+    res.json({ 
         message: `Slot ${slot} successfully booked for ${dex}.`,
-        url: `${url}/${pairAddress}`,
+        dex: dex,
+        chain: chain,
         pairAddress: pairAddress,
-        chain: chain
+        url: url // Adding the DEX URL to the response
     });
 });
 

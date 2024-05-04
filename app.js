@@ -430,22 +430,22 @@ app.post('/transferSOL', async (req, res) => {
     }
 });
 
-app.get('/balance/:walletAddress', async (req, res) => {
+app.get('/getBalance/:walletAddress', async (req, res) => {
     try {
-        const walletAddress = req.params.walletAddress;
-        const balance = await getBalance(walletAddress);
-        res.status(200).json({
-            success: true,
-            address: walletAddress,
-            balance: balance / LAMPORTS_PER_SOL // Convert lamports to SOL
-        });
+        const publicKey = new PublicKey(req.params.walletAddress);
+        const balance = await connection.getBalance(publicKey);
+        res.status(200).send({ balance: balance });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Failed to get balance: ' + error.message
-        });
+        res.status(500).send({ error: error.message });
     }
 });
+
+app.get('/tokenBalance/:walletAddress', async (req, res) => {
+    const walletAddress = req.params.walletAddress;
+    const balance = await getTokenBalance(walletAddress);
+    res.json({ balance });
+});
+
 app.get('/createWallet', (req, res) => {
     const keyPair = Keypair.generate();
     const publicKey = keyPair.publicKey.toString();

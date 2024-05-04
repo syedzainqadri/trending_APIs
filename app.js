@@ -59,12 +59,14 @@ async function convertBs58ToUint8Array(secretBs58Key) {
 }
 
 
-async function getBalance(walletAddress) {
+async function getSOLBalance(walletAddress) {
     try {
         const publicKey = new PublicKey(walletAddress);
-        const balance = await connection.getBalance(publicKey);
-        return balance; 
+        const balanceLamports = await solanaConnection.getBalance(publicKey);
+        const balanceSol = balanceLamports / 1_000_000_000; // Convert lamports to SOL
+        return balanceSol.toFixed(2) + ' SOL'; // Format the balance to two decimal places and append "SOL"
     } catch (error) {
+        console.error("Failed to get the balance:", error);
         throw error;
     }
 }
@@ -94,25 +96,6 @@ async function getTokenBalance(walletAddress) {
         return 0;
     }
 }
-
-
-app.post('/balance', async (req, res) => {
-    console.log('balance api hit')
-    const { paymentMethod, publicKey } = req.body;
-    var currentBalance
-        try {
-            if (paymentMethod === "Monkeys") {
-                currentBalance = await getTokenBalance(publicKey);
-           }else if(paymentMethod === "sol")f {
-            currentBalance = await getSOLBalance(publicKey);
-           }else{
-            console.log('Received payment:', currentBalance);
-        } catch (e) {
-            console.error('Error parsing message', e);
-        }
-        res.json({currentBalance});
-});
-
 app.post('/select-chain', async (req, res) => {
     console.log('select chain api hit')
     const { chain } = req.body;
@@ -393,54 +376,18 @@ app.post('/conversion', async (req, res) => {
     }
 });
 
-app.post('/transferSOL', async (req, res) => {
-    const { fromSecret, toPubkey } = req.body;
-    if (!fromSecret || !toPubkey) {
-        return res.status(400).json({
-            success: false,
-            message: 'Missing required parameters: fromSecret and toPubkey'
-        });
-    }
-    try {
-        const secretKeyUint8Array = await convertBs58ToUint8Array(fromSecret);
-        const fromKeypair = Keypair.fromSecretKey(secretKeyUint8Array);
-        const toPublicKey = new PublicKey(toPubkey);
-        const balance = await getBalance(fromKeypair.publicKey);
-        const sendingAmount = balance - (0.000005 * LAMPORTS_PER_SOL); // Subtract transaction fee
 
-        const transaction = new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: fromKeypair.publicKey,
-                toPubkey: toPublicKey,
-                lamports: sendingAmount
-            })
-        );
-        const signature = await connection.sendTransaction(transaction, [fromKeypair], { skipPreflight: false, preflightCommitment: 'single' });
-        await connection.confirmTransaction(signature, 'single');
-        res.status(200).json({
-            success: true,
-            message: 'Transaction successful!',
-            transactionId: signature
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Transaction failed: ' + error.message
-        });
-    }
-});
-
-app.get('/getBalance/:walletAddress', async (req, res) => {
+app.get('/getSOLBalance/:walletAddress', async (req, res) => {
     try {
         const publicKey = new PublicKey(req.params.walletAddress);
-        const balance = await connection.getBalance(publicKey);
+        const balance = await getSOLBalance(publicKey);
         res.status(200).send({ balance: balance });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
 });
 
-app.get('/tokenBalance/:walletAddress', async (req, res) => {
+app.get('/getTokenBalance/:walletAddress', async (req, res) => {
     const walletAddress = req.params.walletAddress;
     const balance = await getTokenBalance(walletAddress);
     res.json({ balance });

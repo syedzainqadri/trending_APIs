@@ -63,7 +63,7 @@ async function getBalance(walletAddress) {
     try {
         const publicKey = new PublicKey(walletAddress);
         const balance = await connection.getBalance(publicKey);
-        return balance; // Return balance in lamports for internal calculation
+        return balance; 
     } catch (error) {
         throw error;
     }

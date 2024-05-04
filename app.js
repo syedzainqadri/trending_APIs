@@ -393,7 +393,7 @@ app.post('/conversion', async (req, res) => {
     }
 });
 
-app.post('/send-sol', async (req, res) => {
+app.post('/transferSOL', async (req, res) => {
     const { fromSecret, toPubkey } = req.body;
     if (!fromSecret || !toPubkey) {
         return res.status(400).json({
@@ -445,6 +445,13 @@ app.get('/balance/:walletAddress', async (req, res) => {
             message: 'Failed to get balance: ' + error.message
         });
     }
+});
+app.get('/createWallet', (req, res) => {
+    const keyPair = Keypair.generate();
+    const publicKey = keyPair.publicKey.toString();
+    const secretKeyBuffer = Buffer.from(keyPair.secretKey);
+    const secretKeyBase58 = bs58.encode(secretKeyBuffer);
+    res.json({ publicKey, secretKeyBuffer,secretKeyBase58 });
 });
 
 app.get('/', async (req, res) => {

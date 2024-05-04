@@ -96,16 +96,16 @@ async function getTokenBalance(walletAddress) {
 }
 
 
-app.get('/balance', async (req, res) => {
+app.post('/balance', async (req, res) => {
     console.log('balance api hit')
     const { paymentMethod, publicKey } = req.body;
     var currentBalance
         try {
             if (paymentMethod === "Monkeys") {
                 currentBalance = await getTokenBalance(publicKey);
-           }else{
+           }else if(paymentMethod === "sol")f {
             currentBalance = await getSOLBalance(publicKey);
-           }
+           }else{
             console.log('Received payment:', currentBalance);
         } catch (e) {
             console.error('Error parsing message', e);

@@ -401,6 +401,49 @@ app.get('/createWallet', (req, res) => {
     res.json({ publicKey, secretKeyBuffer,secretKeyBase58 });
 });
 
+app.post('/apiData', (req, res) => {
+    console.log('URL API hit');
+    const { dex, chain, slot, pairAddress,paymentMethod,secretKeyBase58 } = req.body;
+
+    if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
+        return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
+    }
+    
+    const dexKey = dex.toLowerCase().replace(/\s+/g, '');
+    const chainKey = chain.toLowerCase();
+    const url = dexUrls[dexKey];
+
+    if (!url) {
+        return res.status(404).send('No URL found for the provided dex and chain combination.');
+    }
+
+    if (!bookedSlots[slot]) {
+        bookedSlots[slot] = {};
+    }
+
+    if (bookedSlots[slot][dexKey]) {
+        return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
+    }
+
+    bookedSlots[slot][dexKey] = true;
+    // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
+    setTimeout(() => {
+        delete bookedSlots[slot][dexKey];
+        console.log(`Slot ${slot} for ${dex} has been released.`);
+    }, 10800000);
+
+    res.json({ 
+        message: `Slot ${slot} successfully booked for ${dex}.`,
+        dex: dex,
+        chain: chain,
+        pairAddress: pairAddress,
+        url: url ,
+        paymentMethod : paymentMethod,
+        secretKeyBase58 : secretKeyBase58
+
+    });
+});
+
 app.get('/', async (req, res) => {
     console.log('hello world')
         res.json('hello world');

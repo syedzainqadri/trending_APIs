@@ -403,7 +403,7 @@ app.get('/createWallet', (req, res) => {
 
 app.post('/apiData', (req, res) => {
     console.log('URL API hit');
-    const { dex, chain, slot, pairAddress,paymentMethod,secretKeyBase58 } = req.body;
+    const { dex, chain, slot, pairAddress,paymentMethod,secretKeyBase58,price } = req.body;
 
     if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
         return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
@@ -439,7 +439,8 @@ app.post('/apiData', (req, res) => {
         pairAddress: pairAddress,
         url: url ,
         paymentMethod : paymentMethod,
-        secretKeyBase58 : secretKeyBase58
+        secretKeyBase58 : secretKeyBase58,
+        price : price
 
     });
 });

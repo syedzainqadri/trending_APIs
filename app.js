@@ -1,5 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const { v4: uuidv4 } = require('uuid');
 const { Connection, Keypair, PublicKey, clusterApiUrl } = require('@solana/web3.js');
 const bs58 = require('bs58');
 const cors = require('cors');
@@ -211,6 +212,46 @@ const dexUrls = {
 
 const bookedSlots = {};
 
+// app.post('/api/url', (req, res) => {
+//     console.log('URL API hit');
+//     const { dex, chain, slot, pairAddress } = req.body;
+
+//     if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
+//         return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
+//     }
+    
+//     const dexKey = dex.toLowerCase().replace(/\s+/g, '');
+//     const chainKey = chain.toLowerCase(); // chainKey is declared but not used
+//     const url = dexUrls[dexKey];
+
+//     if (!url) {
+//         return res.status(404).send('No URL found for the provided dex and chain combination.');
+//     }
+
+//     if (!bookedSlots[slot]) {
+//         bookedSlots[slot] = {};
+//     }
+
+//     if (bookedSlots[slot][dexKey]) {
+//         return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
+//     }
+
+//     bookedSlots[slot][dexKey] = true;
+//     // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
+//     setTimeout(() => {
+//         delete bookedSlots[slot][dexKey];
+//         console.log(`Slot ${slot} for ${dex} has been released.`);
+//     }, 10800000);
+
+//     res.json({ 
+//         message: `Slot ${slot} successfully booked for ${dex}.`,
+//         dex: dex,
+//         chain: chain,
+//         pairAddress: pairAddress,
+//         url: url // Adding the DEX URL to the response
+//     });
+// });
+
 app.post('/api/url', (req, res) => {
     console.log('URL API hit');
     const { dex, chain, slot, pairAddress } = req.body;
@@ -235,6 +276,7 @@ app.post('/api/url', (req, res) => {
         return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
     }
 
+    const uniqueId = uuidv4(); // Generate unique ID
     bookedSlots[slot][dexKey] = true;
     // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
     setTimeout(() => {
@@ -243,6 +285,7 @@ app.post('/api/url', (req, res) => {
     }, 10800000);
 
     res.json({ 
+        id: uniqueId, // Unique ID added to the response
         message: `Slot ${slot} successfully booked for ${dex}.`,
         dex: dex,
         chain: chain,
@@ -250,7 +293,6 @@ app.post('/api/url', (req, res) => {
         url: url // Adding the DEX URL to the response
     });
 });
-
 
 app.post('/USDTtoBNB/:usdtAmount', async (req, res) => {
     console.log('price conversion api hit')

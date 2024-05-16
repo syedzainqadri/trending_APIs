@@ -13,8 +13,6 @@ const { JsonRpcProvider } = require('ethers');
 const ethProvider = new JsonRpcProvider('https://mainnet.infura.io/v3/0414ba081803472dbf3a1feb7a76dc0e');
 const solanaConnection = new Connection(clusterApiUrl('mainnet-beta'));
 const bscProvider = new JsonRpcProvider('https://bsc-dataseed.binance.org/');
-
-
 app.post('/createSOL', async (req, res) => {
     console.log('create sol api hit')
     const {

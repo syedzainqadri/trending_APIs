@@ -283,7 +283,7 @@ app.post('/api/url', (req, res) => {
     }, 10800000);
 
     res.json({ 
-        id: uniqueId, // Unique ID added to the response
+        orderId: uniqueId, 
         message: `Slot ${slot} successfully booked for ${dex}.`,
         dex: dex,
         chain: chain,

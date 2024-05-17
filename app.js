@@ -62,8 +62,8 @@ async function getSOLBalance(walletAddress) {
     try {
         const publicKey = new PublicKey(walletAddress);
         const balanceLamports = await solanaConnection.getBalance(publicKey);
-        const balanceSol = balanceLamports / 1_000_000_000; // Convert lamports to SOL
-        return balanceSol.toFixed(2) + ' SOL'; // Format the balance to two decimal places and append "SOL"
+        const balanceSol = balanceLamports / 1_000_000_000; 
+        return balanceSol.toFixed(2) ;
     } catch (error) {
         console.error("Failed to get the balance:", error);
         throw error;

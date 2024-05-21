@@ -280,7 +280,7 @@ app.post('/api/url', (req, res) => {
     setTimeout(() => {
         delete bookedSlots[slot][dexKey];
         console.log(`Slot ${slot} for ${dex} has been released.`);
-    }, 10800000); // 3 hours in milliseconds
+    }, 0); // 10800000 3 hours in milliseconds
 
     res.json({
         orderId: uniqueId,

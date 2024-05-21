@@ -203,12 +203,6 @@ app.get('/volume/h1/:chainId/:pairAddress', async (req, res) => {
     }
 });
 
-const dexUrls = {
-    "dextools": "https://www.dextools.io/app/en/",
-    "dexscreener": "https://dexscreener.com/"
-};
-
-const bookedSlots = {};
 
 // app.post('/api/url', (req, res) => {
 //     console.log('URL API hit');
@@ -250,20 +244,26 @@ const bookedSlots = {};
 //     });
 // });
 
+const dexUrls = {
+    "dextools": "https://www.dextools.io/app/en/",
+    "dexscreener": "https://dexscreener.com/"
+};
+
+const bookedSlots = {};
+
 app.post('/api/url', (req, res) => {
-    console.log('URL API hit');
+    console.log('Slot Booking API hit');
     const { dex, chain, slot, pairAddress } = req.body;
 
     if (!dex || !chain || !['1-3', '4-8', 'any'].includes(slot)) {
         return res.status(400).send('Dex, chain, and a valid slot (1-3, 4-8, any) are required.');
     }
-    
+
     const dexKey = dex.toLowerCase().replace(/\s+/g, '');
-    const chainKey = chain.toLowerCase(); // chainKey is declared but not used
     const url = dexUrls[dexKey];
 
     if (!url) {
-        return res.status(404).send('No URL found for the provided dex and chain combination.');
+        return res.status(404).send('No URL found for the provided dex.');
     }
 
     if (!bookedSlots[slot]) {
@@ -271,25 +271,42 @@ app.post('/api/url', (req, res) => {
     }
 
     if (bookedSlots[slot][dexKey]) {
-        return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different DEX or slot.` });
+        return res.status(409).json({ message: `Slot ${slot} for ${dex} is already booked. Try a different slot or DEX.` });
     }
 
-    const uniqueId = uuidv4(); // Generate unique ID
-    bookedSlots[slot][dexKey] = true;
-    // Schedule to clear the slot after 3 hours (10,800,000 milliseconds)
+    const uniqueId = uuidv4();
+    bookedSlots[slot][dexKey] = uniqueId;
+
     setTimeout(() => {
         delete bookedSlots[slot][dexKey];
         console.log(`Slot ${slot} for ${dex} has been released.`);
-    },0 ); // 10800000 3 hours 
+    }, 10800000); // 3 hours in milliseconds
 
-    res.json({ 
-        orderId: uniqueId, 
+    res.json({
+        orderId: uniqueId,
         message: `Slot ${slot} successfully booked for ${dex}.`,
         dex: dex,
         chain: chain,
         pairAddress: pairAddress,
-        url: url // Adding the DEX URL to the response
+        url: url
     });
+});
+
+app.get('/api/checkSlot/:dex/:slot', (req, res) => {
+    console.log('Slot Check API hit');
+
+    const { dex, slot } = req.params; // Correctly accessing route parameters
+
+    if (!dex || !slot) {
+        return res.status(400).send('Both dex and slot are required parameters.');
+    }
+
+    const dexKey = dex.toLowerCase().replace(/\s+/g, '');
+
+    const isBooked = bookedSlots[slot] && bookedSlots[slot][dexKey];
+    const response = isBooked ? `Slot ${slot} for ${dex} is currently booked.` : `Slot ${slot} for ${dex} is available.`;
+    
+    res.status(200).send(response);
 });
 
 app.post('/USDTtoBNB/:usdtAmount', async (req, res) => {
